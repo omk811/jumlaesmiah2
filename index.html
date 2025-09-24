@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الجملة الاسمية التفاعلية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
+        body { font-family: 'Almarai', sans-serif; }
+        .correct-answer { animation: correctPulse 0.6s ease-in-out; }
+        .wrong-answer { animation: wrongShake 0.6s ease-in-out; }
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background-color: #10b981; }
+            100% { transform: scale(1); }
+        }
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .question-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-800 mb-2">🎯 لعبة الجملة الاسمية</h1>
+            <p class="text-lg text-gray-600">اختبر معرفتك في قواعد اللغة العربية</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">التقدم</span>
+                <span class="text-sm font-medium text-gray-700" id="progress-text">0 / 15</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="progress-bar bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full" id="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Score Display -->
+        <div class="flex justify-center gap-6 mb-6">
+            <div class="bg-green-100 rounded-lg px-6 py-3 text-center">
+                <div class="text-2xl font-bold text-green-600" id="correct-score">0</div>
+                <div class="text-sm text-green-700">إجابات صحيحة</div>
+            </div>
+            <div class="bg-red-100 rounded-lg px-6 py-3 text-center">
+                <div class="text-2xl font-bold text-red-600" id="wrong-score">0</div>
+                <div class="text-sm text-red-700">إجابات خاطئة</div>
+            </div>
+        </div>
+
+        <!-- Game Container -->
+        <div id="game-container">
+            <!-- Question Card -->
+            <div class="question-card bg-white rounded-xl shadow-lg p-8 mb-6 fade-in" id="question-card">
+                <div class="text-center mb-6">
+                    <span class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full text-sm font-medium" id="question-number">السؤال 1</span>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-800 text-center mb-8" id="question-text">
+                    حدد المبتدأ في الجملة التالية: "الطالبُ مجتهدٌ"
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="options-container">
+                    <!-- Options will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div class="hidden bg-white rounded-xl shadow-lg p-6 mb-6" id="feedback-card">
+                <div class="text-center">
+                    <div class="text-6xl mb-4" id="feedback-emoji">✅</div>
+                    <h3 class="text-2xl font-bold mb-2" id="feedback-title">إجابة صحيحة!</h3>
+                    <p class="text-gray-600 mb-4" id="feedback-explanation">المبتدأ هو "الطالبُ" لأنه الاسم المرفوع الذي تبدأ به الجملة الاسمية.</p>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors" id="next-btn">
+                        السؤال التالي ←
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Results -->
+        <div class="hidden" id="results-container">
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div class="text-6xl mb-4">🎉</div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">انتهت اللعبة!</h2>
+                <div class="text-xl mb-6">
+                    <span class="text-green-600 font-bold" id="final-correct">0</span> إجابة صحيحة من أصل 15
+                </div>
+                <div class="text-lg mb-6" id="final-message">أداء ممتاز! استمر في التعلم</div>
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div class="text-lg font-medium text-gray-700 mb-2">نسبة النجاح</div>
+                    <div class="text-3xl font-bold text-indigo-600" id="success-rate">0%</div>
+                </div>
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors" id="restart-btn">
+                    🔄 ابدأ من جديد
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with Links -->
+    <footer class="bg-white border-t-2 border-gray-100 mt-12 py-8">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="text-center">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">روابط مفيدة</h3>
+                
+                <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-6">
+                    <a href="https://whatsapp.com/channel/0029VamotBKCxoAy3fzUcv3T" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 min-w-[200px] justify-center">
+                        <span>📱</span>
+                        قناة الواتساب
+                    </a>
+                    
+                    <a href="https://omk811.blogspot.com/2023/09/blog-post_20.html" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 min-w-[200px] justify-center">
+                        <span>📚</span>
+                        الموضوع الرئيسي
+                    </a>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4">
+                    <p class="text-gray-600 font-medium">
+                        من إعداد: <span class="text-indigo-600 font-bold">الأستاذ خليل البلوشي</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                question: 'حدد المبتدأ في الجملة التالية: "الطالبُ مجتهدٌ"',
+                options: ['الطالبُ', 'مجتهدٌ', 'الجملة كاملة', 'لا يوجد مبتدأ'],
+                correct: 0,
+                explanation: 'المبتدأ هو "الطالبُ" لأنه الاسم المرفوع الذي تبدأ به الجملة الاسمية.'
+            },
+            {
+                question: 'ما هو الخبر في الجملة: "السماءُ صافيةٌ"؟',
+                options: ['السماءُ', 'صافيةٌ', 'السماء صافية', 'لا يوجد خبر'],
+                correct: 1,
+                explanation: 'الخبر هو "صافيةٌ" لأنه يخبر عن حال المبتدأ "السماءُ".'
+            },
+            {
+                question: 'أي من الجمل التالية جملة اسمية؟',
+                options: ['يذهب أحمد إلى المدرسة', 'الكتابُ مفيدٌ', 'اقرأ الدرس', 'لا تتأخر'],
+                correct: 1,
+                explanation: '"الكتابُ مفيدٌ" جملة اسمية لأنها تبدأ بالاسم "الكتابُ".'
+            },
+            {
+                question: 'في الجملة "المعلمُ في الفصل"، ما نوع الخبر؟',
+                options: ['خبر مفرد', 'خبر جملة', 'خبر شبه جملة', 'ليس خبراً'],
+                correct: 2,
+                explanation: '"في الفصل" خبر شبه جملة (جار ومجرور) يخبر عن مكان المعلم.'
+            },
+            {
+                question: 'حدد المبتدأ والخبر في: "الوردةُ عطرها جميلٌ"',
+                options: ['المبتدأ: الوردةُ، الخبر: عطرها', 'المبتدأ: الوردةُ، الخبر: عطرها جميلٌ', 'المبتدأ: عطرها، الخبر: جميلٌ', 'المبتدأ: الوردةُ، الخبر: جميلٌ'],
+                correct: 1,
+                explanation: 'المبتدأ "الوردةُ" والخبر "عطرها جميلٌ" وهو خبر جملة اسمية.'
+            },
+            {
+                question: 'أي من الجمل التالية مبتدؤها ضمير منفصل؟',
+                options: ['الطفل يلعب', 'هو طالب', 'محمد مسافر', 'الشمس مشرقة'],
+                correct: 1,
+                explanation: '"هو طالب" المبتدأ فيها ضمير منفصل "هو".'
+            },
+            {
+                question: 'في الجملة "الطلابُ يدرسون"، ما نوع الخبر؟',
+                options: ['خبر مفرد', 'خبر جملة فعلية', 'خبر جملة اسمية', 'خبر شبه جملة'],
+                correct: 1,
+                explanation: '"يدرسون" خبر جملة فعلية لأنه يتكون من فعل وفاعل.'
+            },
+            {
+                question: 'حدد الجملة التي خبرها مفرد:',
+                options: ['البيت كبير', 'الطائر يغرد', 'الكتاب على الطاولة', 'الولد أبوه معلم'],
+                correct: 0,
+                explanation: '"البيت كبير" الخبر فيها مفرد وهو "كبير".'
+            },
+            {
+                question: 'ما إعراب كلمة "جميلة" في الجملة: "الحديقةُ جميلةٌ"؟',
+                options: ['مبتدأ مرفوع', 'خبر مرفوع', 'صفة مرفوعة', 'مفعول به منصوب'],
+                correct: 1,
+                explanation: '"جميلةٌ" خبر مرفوع وعلامة رفعه الضمة الظاهرة.'
+            },
+            {
+                question: 'أي من الجمل التالية تحتوي على مبتدأ محذوف؟',
+                options: ['الطالب مجتهد', 'في البيت رجل', 'هو معلم', 'الكتاب مفيد'],
+                correct: 1,
+                explanation: '"في البيت رجل" المبتدأ محذوف تقديره "هناك" أو "يوجد".'
+            },
+            {
+                question: 'في الجملة "أخوك طبيب"، ما إعراب "أخوك"؟',
+                options: ['مبتدأ مرفوع بالواو', 'مبتدأ مرفوع بالضمة', 'خبر مرفوع بالواو', 'مضاف إليه'],
+                correct: 0,
+                explanation: '"أخوك" مبتدأ مرفوع وعلامة رفعه الواو لأنه من الأسماء الخمسة.'
+            },
+            {
+                question: 'حدد نوع الخبر في: "الطالبُ كتابُه جديدٌ"',
+                options: ['خبر مفرد', 'خبر جملة اسمية', 'خبر جملة فعلية', 'خبر شبه جملة'],
+                correct: 1,
+                explanation: '"كتابُه جديدٌ" خبر جملة اسمية مكونة من مبتدأ ثانٍ وخبره.'
+            },
+            {
+                question: 'أي من الجمل التالية خبرها شبه جملة ظرفية؟',
+                options: ['الكتاب في الحقيبة', 'الطائر فوق الشجرة', 'الطالب عند المعلم', 'جميع ما سبق'],
+                correct: 3,
+                explanation: 'جميع الجمل تحتوي على خبر شبه جملة ظرفية (ظرف مكان).'
+            },
+            {
+                question: 'ما إعراب "معلمان" في الجملة: "هما معلمان"؟',
+                options: ['خبر مرفوع بالألف', 'مبتدأ مرفوع بالألف', 'خبر مرفوع بالضمة', 'مفعول به'],
+                correct: 0,
+                explanation: '"معلمان" خبر مرفوع وعلامة رفعه الألف لأنه مثنى.'
+            },
+            {
+                question: 'في أي جملة يكون الخبر جملة فعلية؟',
+                options: ['الشمس مشرقة', 'الطفل يضحك', 'الكتاب على الرف', 'هو طالب'],
+                correct: 1,
+                explanation: '"الطفل يضحك" الخبر فيها جملة فعلية "يضحك".'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+
+        const questionNumberEl = document.getElementById('question-number');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackCard = document.getElementById('feedback-card');
+        const questionCard = document.getElementById('question-card');
+        const feedbackEmoji = document.getElementById('feedback-emoji');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackExplanation = document.getElementById('feedback-explanation');
+        const nextBtn = document.getElementById('next-btn');
+        const correctScoreEl = document.getElementById('correct-score');
+        const wrongScoreEl = document.getElementById('wrong-score');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const gameContainer = document.getElementById('game-container');
+        const resultsContainer = document.getElementById('results-container');
+        const finalCorrect = document.getElementById('final-correct');
+        const finalMessage = document.getElementById('final-message');
+        const successRate = document.getElementById('success-rate');
+        const restartBtn = document.getElementById('restart-btn');
+
+        function displayQuestion() {
+            const question = questions[currentQuestion];
+            
+            questionNumberEl.textContent = `السؤال ${currentQuestion + 1}`;
+            questionTextEl.textContent = question.question;
+            
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-lg p-4 text-right transition-all duration-200 hover:border-indigo-300';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            updateProgress();
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = questions[currentQuestion];
+            const buttons = optionsContainer.querySelectorAll('button');
+            
+            // Disable all buttons
+            buttons.forEach(btn => btn.disabled = true);
+            
+            if (selectedIndex === question.correct) {
+                correctAnswers++;
+                buttons[selectedIndex].classList.add('correct-answer', 'bg-green-500', 'text-white', 'border-green-500');
+                showFeedback(true, question.explanation);
+            } else {
+                wrongAnswers++;
+                buttons[selectedIndex].classList.add('wrong-answer', 'bg-red-500', 'text-white', 'border-red-500');
+                buttons[question.correct].classList.add('bg-green-500', 'text-white', 'border-green-500');
+                showFeedback(false, question.explanation);
+            }
+            
+            updateScores();
+        }
+
+        function showFeedback(isCorrect, explanation) {
+            setTimeout(() => {
+                questionCard.classList.add('hidden');
+                feedbackCard.classList.remove('hidden');
+                
+                if (isCorrect) {
+                    feedbackEmoji.textContent = '✅';
+                    feedbackTitle.textContent = 'إجابة صحيحة!';
+                    feedbackTitle.className = 'text-2xl font-bold mb-2 text-green-600';
+                } else {
+                    feedbackEmoji.textContent = '❌';
+                    feedbackTitle.textContent = 'إجابة خاطئة';
+                    feedbackTitle.className = 'text-2xl font-bold mb-2 text-red-600';
+                }
+                
+                feedbackExplanation.textContent = explanation;
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion >= questions.length) {
+                showResults();
+                return;
+            }
+            
+            feedbackCard.classList.add('hidden');
+            questionCard.classList.remove('hidden');
+            questionCard.classList.add('fade-in');
+            
+            displayQuestion();
+        }
+
+        function updateScores() {
+            correctScoreEl.textContent = correctAnswers;
+            wrongScoreEl.textContent = wrongAnswers;
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${currentQuestion + 1} / ${questions.length}`;
+        }
+
+        function showResults() {
+            gameContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            
+            finalCorrect.textContent = correctAnswers;
+            const rate = Math.round((correctAnswers / questions.length) * 100);
+            successRate.textContent = `${rate}%`;
+            
+            let message = '';
+            if (rate >= 90) {
+                message = 'ممتاز جداً! أنت خبير في الجملة الاسمية! 🌟';
+            } else if (rate >= 80) {
+                message = 'أداء رائع! تحتاج لمراجعة بسيطة 👏';
+            } else if (rate >= 70) {
+                message = 'أداء جيد! استمر في التعلم 📚';
+            } else if (rate >= 60) {
+                message = 'أداء مقبول، يمكنك التحسن أكثر 💪';
+            } else {
+                message = 'تحتاج لمزيد من المراجعة والتدريب 📖';
+            }
+            
+            finalMessage.textContent = message;
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            
+            resultsContainer.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            
+            updateScores();
+            displayQuestion();
+        }
+
+        // Event listeners
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', restartGame);
+
+        // Initialize game
+        displayQuestion();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984037a136238988',t:'MTc1ODY5NTI2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
